@@ -106,6 +106,18 @@ class ICloudClient
       return Promise.reject(error)
     )
 
+  validate: () =>
+    options = {
+      method: 'POST'
+    }
+    @session('setup', '/validate', options)
+    .then( (response) =>
+      return Promise.resolve(response)
+    )
+    .catch( (error) ->
+      return Promise.reject(error)
+    )
+
   trustedDevices: () =>
     endpoint = setup
     path = '/listDevices'
