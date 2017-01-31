@@ -1,6 +1,6 @@
 {
   "name": "icloud-promise",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "dependencies": {
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
