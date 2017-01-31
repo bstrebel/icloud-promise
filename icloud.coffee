@@ -66,10 +66,11 @@ class ICloudClient
   # TODO: validate session an re-authentication
   # TODO: handle two factor authentication (?)
 
-  constructor: (apple_id, password, verification) ->
+  constructor: (apple_id, password, verify='000000', timezone='Europe/Berlin') ->
     @apple_id = apple_id
     @password = password
-    @verification = verification
+    @verify = verify
+    @timezone = timezone
     @authenticated = false
     @session = new ICloudSession(@)
     @data = null
@@ -87,7 +88,7 @@ class ICloudClient
       method: 'POST'
       body: {
         apple_id: @apple_id
-        password: @password
+        password: if @verify is '000000' then @password else @password + @verify
         extendend_login: false
       }
     }
@@ -188,6 +189,7 @@ class ICloudClient
           fmly: true
           shouldLocate: true
           selectedDevice: 'all'
+          timezone: @timezone
         }
       }
     }
@@ -210,6 +212,7 @@ class ICloudClient
           fmly: true
           shouldLocate: true
           selectedDevice: 'all'
+          timezone: @timezone
         }
       }
     }
