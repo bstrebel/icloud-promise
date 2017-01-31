@@ -42,7 +42,7 @@ class ICloudSession
       json: true
       headers: {
         'Origin': @home_endpoint
-        'Referer': @home_endpoint
+        'Referer': @home_endpoint + '/'
         'User-Agent': @user_agent
       }
       resolveWithFullResponse: true
@@ -66,9 +66,10 @@ class ICloudClient
   # TODO: validate session an re-authentication
   # TODO: handle two factor authentication (?)
 
-  constructor: (apple_id, password) ->
+  constructor: (apple_id, password, verification) ->
     @apple_id = apple_id
     @password = password
+    @verification = verification
     @authenticated = false
     @session = new ICloudSession(@)
     @data = null
@@ -79,8 +80,9 @@ class ICloudClient
   getDevices: () =>
     return @devices
 
-  login: () ->
-
+  login: () =>
+    endpoint = 'setup'
+    path = '/login'
     options = {
       method: 'POST'
       body: {
@@ -89,8 +91,7 @@ class ICloudClient
         extendend_login: false
       }
     }
-
-    @session.request('setup', '/login', options)
+    @session.request(endpoint, path, options)
     .then((response) =>
       if response.body?
         @hsaChallengeRequired = response.body.hsaChallengeRequired?
@@ -106,11 +107,42 @@ class ICloudClient
       return Promise.reject(error)
     )
 
+  logout: () =>
+    endpoint = 'setup'
+    path = '/logout'
+    options = {
+      method: 'GET'
+    }
+    @session.request(endpoint, path, options)
+    .then((response) =>
+      return Promise.resolve(response)
+    )
+    .catch( (error) =>
+      return Promise.reject(error)
+    )
+
+  refreshWebAuth: () =>
+    endpoint = 'push'
+    #endpoint = 'account' ?
+    path = '/refreshWebAuth'
+    options = {
+      method: 'GET'
+    }
+    @session.request(endpoint, path, options)
+    .then( (response) =>
+      return Promise.resolve(response)
+    )
+    .catch( (error) ->
+      return Promise.reject(error)
+    )
+
   validate: () =>
+    endpoint = 'setup'
+    path = '/validate'
     options = {
       method: 'POST'
     }
-    @session('setup', '/validate', options)
+    @session.request(endpoint, path, options)
     .then( (response) =>
       return Promise.resolve(response)
     )
@@ -119,19 +151,54 @@ class ICloudClient
     )
 
   trustedDevices: () =>
-    endpoint = setup
+    endpoint = 'setup'
     path = '/listDevices'
     options = {method: 'GET'}
-
     @session.request(endpoint, path, options)
-      .then( (response) ->
-        console.log('LIST RESPONSE')
-        console.log(response.body)
-      )
-      .catch( (err) ->
+    .then( (response) ->
+      # devices = response.body.devices
+      return Promise.resolve(response)
+    )
+    .catch( (error) ->
+      return Promise.reject(error)
+    )
 
-        console.log(err)
-      )
+  sendVerificationCode: (device) =>
+    endpoint = 'setup'
+    path = '/sendVerificationCode'
+    options = {
+      method: 'POST'
+      body: device
+    }
+    @session.request(endpoint, path, options)
+    .then( (response) =>
+      return Promise.resolve(response)
+    )
+    .catch((error) =>
+      return Promise.reject(error)
+    )
+
+  initClient: () =>
+    endpoint = 'findme'
+    path = '/fmipservice/client/web/initClient'
+    options = {
+      method: 'POST'
+      body: {
+        clientContext: {
+          fmly: true
+          shouldLocate: true
+          selectedDevice: 'all'
+        }
+      }
+    }
+    @session.request(endpoint, path, options)
+    .then( (response) =>
+      @devices = response.body.content
+      return Promise.resolve(response)
+    )
+    .catch( (err) ->
+      return Promise.reject(err)
+    )
 
   refreshClient: () =>
     endpoint = 'findme'
@@ -147,28 +214,30 @@ class ICloudClient
       }
     }
     @session.request(endpoint, path, options)
-      .then( (response) =>
-        @devices = response.body.content
-        return Promise.resolve(response)
-      )
-      .catch( (err) ->
-        return Promise.reject(err)
-      )
+    .then( (response) =>
+      @devices = response.body.content
+      return Promise.resolve(response)
+    )
+    .catch( (err) ->
+      return Promise.reject(err)
+    )
 
   errorMessage: (error) ->
-    message = ""
+    message = null
     if error.statusCode?
       if !!error.statusMessage
-        message = error.statusMessage + " "
-      else if !!error.reason
-        message = error.reason + " "
+        message = error.statusMessage
+      else if !!error.body.reason
+        message = error.body.reason
       else if !!error.errorReason
-        message = error.errorReason + " "
-      else if !!error.error
+        message = error.body.errorReason
+      else if !!error.body.error
         # TODO: check typeof error
-        message = error.error + " "
+        message = error.body.error
       else
-        message = "Unknown error" + " "
+        message = "Unknown error"
+      if !!message
+        message = message + " "
       message = message + "[#{error.statusCode}]"
     else
       message = error.toString()
