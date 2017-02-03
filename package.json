@@ -1,6 +1,14 @@
 {
   "name": "icloud-promise",
+  "description": "Session based iCloud Client using request-promise",
   "version": "0.1.1",
+  "main": "icloud.coffee",
+  "files": [
+    "test",
+    "icloud.coffee",
+    "LICENSE-MIT",
+    "README.md"
+  ],
   "dependencies": {
     "bluebird": "^3.4.7",
     "lodash": "^4.17.4",
@@ -10,10 +18,10 @@
     "tough-cookie": "^2.3.2",
     "tough-cookie-filestore": "0.0.1"
   },
-  "description": "Session based iCloud Client using request-promise",
-  "main": "icloud.coffee",
   "devDependencies": {
     "cassert": "^0.1.2",
+    "coffee-errors": "^0.8.6",
+    "coffee-script": "^1.12.3",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
     "grunt-coffeelint": "0.0.16",
@@ -21,7 +29,7 @@
     "mocha": "^3.2.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
@@ -34,7 +42,7 @@
     "API"
   ],
   "author": "Bernd Strebel",
-  "license": "GPL-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/bstrebel/icloud-promise/issues"
   },
