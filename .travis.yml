@@ -5,4 +5,4 @@ before_script:
   - npm install -g grunt-cli
 
 before_install:
-  ./test/travis-before-install
+  - ./test/travis-before-install
